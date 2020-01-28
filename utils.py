@@ -1,4 +1,5 @@
 import numpy as np
+from constants import *
 
 
 def construct_grid(gridinfo):
@@ -35,13 +36,6 @@ def read_cube(cubefile, natoms):
         data.extend(line.split())
     cube.close()
     return np.array(data, dtype=float)
-
-
-def read_coordinates(xyzfile):
-    try:
-        return np.loadtxt(xyzfile, skiprows=2, usecols=(1, 2, 3), dtype=float)
-    except IOError:
-        exit("Error loading {}".format(xyzfile))
 
 
 def cross_section(aD, v_freq, laser=634, temperatur=298):
