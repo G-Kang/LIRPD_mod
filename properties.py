@@ -1,4 +1,5 @@
 import math
+import numpy as np
 from constants import *
 
 class Atom(object):
@@ -8,17 +9,16 @@ class Atom(object):
 		self.chg   = chg
 
 class Molecule(object):
-	def __init__(self, natoms, atoms, modes):
-		self.natoms = natoms
-		self.atoms  = atoms
-		self.modes  = modes
+	def __init__(self, xyzfile):
+		self.modes = []
+		self.read_xyzfile(xyzfile)
 
 	def read_xyzfile(self,xyzfile):
 		try:
 			f = open(xyzfile,'r')
-			self.natom = f.readline()
-			self.atoms = np.loadtxt(xyzfile, skiprows=2, usecols=0, dtype=str)
-			self.xyz = np.loadtxt(xyzfile, skiprows=2, usecols=(1, 2, 3), dtype=float)
+			self.natoms = int(f.readline())
+			self.atoms  = np.loadtxt(xyzfile, skiprows=2, usecols=0, dtype=str)
+			self.xyz    = np.loadtxt(xyzfile, skiprows=2, usecols=(1, 2, 3), dtype=float)
 		except IOError:
 			exit("Error loading {}".format(xyzfile))
 
@@ -76,9 +76,9 @@ class Vib(object):
 
 		for k in range(len(self.alpha_diff)):
 			if 'x' in coord or 'y' in coord or 'z' in coord:
-				j = 0 if 'x' in coord
-				j = 1 if 'y' in coord
-				j = 2 if 'z' in coord
+				if 'x' in coord: j = 0
+				if 'y' in coord: j = 1
+				if 'z' in coord: j = 2
 
 				asq_r.append(self.alpha_diff[k][j][j].real**2)
 				asq_i.append(self.alpha_diff[k][j][j].imag**2)
