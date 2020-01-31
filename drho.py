@@ -2,7 +2,9 @@
 
 from utils import *
 import sys,os,glob
-from properties import *
+from atom import *
+from molecule import *
+from vibration import *
 from numpy import *
 from copy import deepcopy
 
@@ -14,28 +16,32 @@ finally print out in cube format
 
 AUTHORS: Xing Chen
 '''
-fxyz=raw_input("Coordinates (*.xyz):  ")
+fxyz=input("Coordinates (*.xyz):  ")
 
-mol = Molecule()
-mol.read_xyzfile(fxyz)
-mol.read_modes(modefile='nmodes.inp')
+mol = read_xyzfile(fxyz)
+
+vibs = VibAll('nmodes.inp').modes
+
 
 ## collect data 
 # figure out the types of tensors
 
-vibs = mol.modes
-freq = raw_input("Frequency as written in output name:")
+notfound = True
+while(notfound):
+	freq = input("Frequency as written in output name:")
 
-norm = 0.0
-for v in vibs:
-	if v.freq == float(freq):
-		v.norm_mode(mol)
-		norm = v.norm
+	norm = 0.0
+	for v in vibs:
+		if v.freq == float(freq):
+			v.norm_mode(mol)
+			norm = v.norm
+			print('Mode %d, %f cm-1' % (v.index+1,v.freq))
+			notfound = False
 
-if norm == 0.0:
-	print ('Frequency not found')
-	sys.exit(-1)
-''' 
+	if norm == 0.0:
+		print ('Frequency not found')
+		sys.exit(-1)
+
 os.system("tar -zxvf mode{0}m.tar.gz".format(freq))
 os.system("tar -zxvf mode{0}p.tar.gz".format(freq))
 
@@ -73,25 +79,26 @@ gx=array([])
 k=0
 for i in ln.readlines():
 	for j in i.split():
-	k=k+1
-	if k==5: l=int(j)
+		k=k+1
+		if k==5: l=int(j)
 		if k>7: gx=append(gx,float(j))
 
-ln=open("ycoord")
-gy=array([])
-k=0
-for i in ln.readlines():
-	for j in i.split():
-		k=k+1
-		if k>7: gy=append(gy,float(j))
+	ln=open("ycoord")
+	gy=array([])
+	k=0
+	for i in ln.readlines():
+		for j in i.split():
+			k=k+1
+			if k>7: gy=append(gy,float(j))
 
-ln=open("zcoord")
-gz=array([])
-k=0
-for i in ln.readlines():
-	for j in i.split():
-		k=k+1
-		if k>7: gz=append(gz,float(j))
+	ln=open("zcoord")
+	gz=array([])
+	k=0
+	for i in ln.readlines():
+		for j in i.split():
+			k=k+1
+			if k>7: gz=append(gz,float(j))
+
 DICT={}
 DICT.update({'gridx': gx})
 DICT.update({'gridy': gy})
@@ -182,8 +189,8 @@ if damp:
 	aatensor.imag = aatensor_format(drho,l)
 
 	if quad:
-	os.system("dmpkf {0} 'Atensor_imag' > {1}".format(tape,base+"-A-imag.dat"))
-	os.system("dmpkf {0} 'Ctensor_imag' > {1}".format(tape,base+"-C-imag.dat"))
+		os.system("dmpkf {0} 'Atensor_imag' > {1}".format(tape,base+"-A-imag.dat"))
+		os.system("dmpkf {0} 'Ctensor_imag' > {1}".format(tape,base+"-C-imag.dat"))
 	
 
 alpha=alpha.reshape((xnum,ynum,znum,3,3))
@@ -214,4 +221,4 @@ if damp:
 	write_cube(xyz,xpara,ypara,zpara,aatensor[:,:,:,2,2,1].imag,fnew)
 	
 os.system("rm *alpha.dat *Aa.dat keys xcoord ycoord zcoord")
-'''
+

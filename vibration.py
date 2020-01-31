@@ -1,7 +1,39 @@
+from atom import *
+from constants import *
+import math
+
+class VibAll(object):
+	def __init__(self, vibfile='nmodes.inp', nrsfile=''):
+		self.modes = []
+		if nrsfile == '':
+			self.get_modes(vibfile)
+		else:
+			self.get_nrs(nrsfile)
+
+	def get_modes(self, vibfile):
+		with open(vibfile) as f:
+			line = f.readline()
+			nmodes = 0
+
+			while len(line) > 0:
+				freqs = line.split()
+				curr_modes = len(freqs)
+				for i in range(curr_modes): self.modes.append(Vib(nmodes+i,float(freqs[i])))
+				for i in range(2): line = f.readline()
+
+				while len(line) > 2:
+					disp = list(map(float,line.split()[1:]))
+					for i in range(curr_modes): self.modes[nmodes+i].add_disp(disp[3*i:3*i+2])
+					line = f.readline()
+
+				nmodes += curr_modes
+				for i in range(2): line = f.readline()
+		f.close()
+
 class Vib(object):
-	def __init__(self, freq, index):
-		self.freq  = freq
+	def __init__(self, index=0, freq=0.0):
 		self.index = index
+		self.freq  = freq
 		self.disp  = []
 		self.norm  = 0.0
 
@@ -12,7 +44,7 @@ class Vib(object):
 		if len(self.disp) > 0:
 			init_norm = 0.0
 			for i,atom in enumerate(mol.atoms):
-				mass = atomic_mass(atom)
+				mass = atomic_mass(atom.elem)
 				init_norm += sum(map(lambda x : x**2*mass, self.disp[i]))
 
 			init_norm = math.sqrt(init_norm)

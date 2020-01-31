@@ -6,7 +6,7 @@ from copy import deepcopy
 
 
 fxyz = 'test.xyz'
-mol = Molecule().read_xyzfile(fxyz)
+read_xyzfile(fxyz)
 mol.read_modes(modefile='nmodes.inp')
 
 vibs = mol.modes
